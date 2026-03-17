@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: dragonswap_v3
+rollback_on_reorg: true
+contracts:
+  - name: Factory
+    events:
+      - event: PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)
+  - name: Pool
+    events:
+      - event: Initialize(uint160 sqrtPriceX96, int24 tick)
+      - event: Burn(address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)
+        field_selection:
+          transaction_fields:
+            - hash
+            - gasPrice
+            - gas
+            - gasUsed
+            - from
+      - event: Mint(address sender, address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)
+        field_selection:
+          transaction_fields:
+            - hash
+            - gasPrice
+            - gas
+            - gasUsed
+            - from
+      - event: Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)
+        field_selection:
+          transaction_fields:
+            - hash
+            - gasPrice
+            - gas
+            - gasUsed
+            - from
+      - event: Flash(address indexed sender, address indexed recipient, uint256 amount0, uint256 amount1, uint256 paid0, uint256 paid1)
+  - name: NonfungiblePositionManager
+    events:
+      - event: IncreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)
+        field_selection:
+          transaction_fields:
+            - hash
+            - gasPrice
+            - gas
+            - gasUsed
+            - from
+      - event: DecreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)
+        field_selection:
+          transaction_fields:
+            - hash
+            - gasPrice
+            - gas
+            - gasUsed
+            - from
+      - event: Collect(uint256 indexed tokenId, address recipient, uint256 amount0, uint256 amount1)
+        field_selection:
+          transaction_fields:
+            - hash
+            - gasPrice
+            - gas
+            - gasUsed
+            - from
+      - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+        field_selection:
+          transaction_fields:
+            - hash
+            - gasPrice
+            - gas
+            - gasUsed
+            - from
+
+
+chains:
+  - id: 1329 # sei
+    start_block: 96611313
+    hypersync_config:
+      url: https://sei.hypersync.xyz
+    contracts:
+      - name: Factory
+        address: 0x179D9a5592Bc77050796F7be28058c51cA575df4
+      - name: Pool 
+      - name: NonfungiblePositionManager
+        address: 0xa7FDcBe645d6b2B98639EbacbC347e2B575f6F70
