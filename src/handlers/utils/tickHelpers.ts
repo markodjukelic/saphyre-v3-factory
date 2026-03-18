@@ -1,7 +1,7 @@
 import { BigDecimal } from "generated";
 import { Tick } from "generated";
 import { ZERO_BD, ONE_BD, ZERO_BI } from "./constants";
-import { fastExponentiation, safeDiv } from "./index";
+import { _fastExponentiation, safeDiv } from "./index";
 
 /**
  * Create a minimal Tick entity. Used by Mint when creating new ticks, and by Swap
@@ -21,7 +21,7 @@ export function createTick(
     feeGrowthOutside1X128: string;
   }
 ): Tick {
-  const Price0 = fastExponentiation(new BigDecimal("1.0001"), tickIdx);
+  const Price0 = _fastExponentiation(new BigDecimal("1.0001"), tickIdx);
   return {
     id: tickId,
     tickIdx: tickIdx,

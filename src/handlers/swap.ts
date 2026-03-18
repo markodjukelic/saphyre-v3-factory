@@ -8,8 +8,6 @@ import { getPoolFeeGrowthEffect, getPoolTickFeeGrowthEffect } from './utils/pool
 import { makeId, bundleId, SUBGRAPH_COMPATIBLE_IDS } from './utils/idFormat';
 import { shouldLogPool, shouldLogSwap, shouldLogTransaction, shouldLogTick } from './utils/debugLogAllowlist';
 import { SUBGRAPH_EXPECTED } from './utils/debugLogSubgraphExpected';
-import { createTick } from './utils/tickHelpers';
-
 /** Positive modulo for bigint (subgraph tick math) */
 function mod(a: bigint, b: bigint): bigint {
   const r = a % b;
@@ -194,12 +192,14 @@ Pool.Swap.handler(async ({ event, context }) => {
     pool.feeGrowthGlobal0X128 = BigInt(feeGrowth.feeGrowthGlobal0X128);
     pool.feeGrowthGlobal1X128 = BigInt(feeGrowth.feeGrowthGlobal1X128);
 
-    // Subgraph: update inner vars of current or crossed ticks (loadTickUpdateFeeVarsAndSave, cap 100)
+    // Subgraph: loadTickUpdateFeeVarsAndSave - only update ticks that already exist; skip (do not create) if null.
     const oldTick = poolRO.tick ?? 0n;
     const newTick = event.params.tick;
     const tickSpacing = feeTierToTickSpacing(pool.feeTier);
     const modulo = mod(newTick, tickSpacing);
-    const updateTickFeeVars = async (tick: Tick) => {
+    const loadAndUpdateTickFeeVars = async (tickId: string): Promise<void> => {
+        const tick = await context.Tick.get(tickId);
+        if (!tick) return; // matches subgraph: loadTickUpdateFeeVarsAndSave skips null ticks
         const feeVars = await context.effect(getPoolTickFeeGrowthEffect, {
             poolAddress: event.srcAddress,
             chainId: event.chainId,
@@ -219,39 +219,21 @@ Pool.Swap.handler(async ({ event, context }) => {
         }
         await intervalUpdates.updateTickDayData(timestamp, updated, context);
     };
-    // Subgraph: loadTickUpdateFeeVarsAndSave - if tick exists, update; if null, skip.
-    // We also CREATE tick when it doesn't exist (from contract via effect) so crossed-only ticks get liquidityNet
-    const getOrCreateTick = async (tickId: string, tickIdx: bigint): Promise<Tick> => {
-        let tick = await context.Tick.get(tickId);
-        if (!tick) {
-            const feeVars = await context.effect(getPoolTickFeeGrowthEffect, {
-                poolAddress: event.srcAddress,
-                chainId: event.chainId,
-                tickIdx: Number(tickIdx),
-            });
-            tick = createTick(tickId, tickIdx, poolId, timestamp, event.block.number, feeVars);
-            context.Tick.set(tick);
-        }
-        return tick;
-    };
 
     if (modulo === 0n) {
-        const currentTick = await getOrCreateTick(`${poolId}#${newTick}`, newTick);
-        await updateTickFeeVars(currentTick);
+        await loadAndUpdateTickFeeVars(`${poolId}#${newTick}`);
     }
     const numIters = (oldTick - newTick >= 0n ? oldTick - newTick : newTick - oldTick) / tickSpacing;
     if (numIters <= 100n) {
         if (newTick > oldTick) {
             let firstInitialized = oldTick + (tickSpacing - modulo);
             for (let i = firstInitialized; i <= newTick; i += tickSpacing) {
-                const tick = await getOrCreateTick(`${poolId}#${i}`, i);
-                await updateTickFeeVars(tick);
+                await loadAndUpdateTickFeeVars(`${poolId}#${i}`);
             }
         } else if (newTick < oldTick) {
             let firstInitialized = oldTick - modulo;
             for (let i = firstInitialized; i >= newTick; i -= tickSpacing) {
-                const tick = await getOrCreateTick(`${poolId}#${i}`, i);
-                await updateTickFeeVars(tick);
+                await loadAndUpdateTickFeeVars(`${poolId}#${i}`);
             }
         }
     }
