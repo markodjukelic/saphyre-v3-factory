@@ -1,8 +1,9 @@
 import assert from "assert";
 import { 
-    Bundle, Token, TestHelpers, BigDecimal, Factory, Pool, Swap, 
+    Bundle, Token, TestHelpers, BigDecimal, Swap, 
     UniswapDayData, PoolDayData, PoolHourData, TokenDayData, TokenHourData
 } from 'generated';
+import type { Entities_Factory_t as Factory, Entities_Pool_t as Pool } from 'generated';
 import { convertTokenToDecimal, safeDiv } from '../src/handlers/utils';
 import { ZERO_BD } from '../src/handlers/utils/constants';
 import {
@@ -34,8 +35,8 @@ const txFrom = '0xa79d3B28A109F0E3E4919c9715748dB6D88f313f';
 const txHash = "0xd6005a794596212a1bdc19178e04e18eb8e9e0963d7073303bcb47d6186e757e";
 
 interface SwapFixture {
-    sender: string
-    recipient: string
+    sender: `0x${string}`
+    recipient: `0x${string}`
     amount0: bigint
     amount1: bigint
     sqrtPriceX96: bigint

@@ -1,8 +1,9 @@
 import assert from "assert";
 import { 
-    Bundle, Factory, Pool, Token, TestHelpers, BigDecimal,
+    Bundle, Token, TestHelpers, BigDecimal,
     UniswapDayData, PoolDayData, PoolHourData, TokenDayData, TokenHourData
 } from 'generated';
+import type { Entities_Factory_t as Factory, Entities_Pool_t as Pool } from 'generated';
 import { ADDRESS_ZERO, ZERO_BD, ZERO_BI } from '../src/handlers/utils/constants';
 import {
     updatePoolDayData,
@@ -30,7 +31,10 @@ describe('uniswap interval data', () => {
     const factory: Factory = {
         id: factoryId,
         poolCount: ZERO_BI,
-        numberOfSwaps: ZERO_BI,
+        txCount: ZERO_BI,
+        mintCount: ZERO_BI,
+        burnCount: ZERO_BI,
+        swapCount: ZERO_BI,
         totalVolumeUSD: ZERO_BD,
         totalVolumeETH: ZERO_BD,
         totalFeesUSD: ZERO_BD,
@@ -39,7 +43,6 @@ describe('uniswap interval data', () => {
         totalValueLockedUSDUntracked: ZERO_BD,
         totalValueLockedETHUntracked: ZERO_BD,
         totalValueLockedETH: ZERO_BD,
-        txCount: ZERO_BI,
         totalValueLockedUSD: ZERO_BD,
         owner: ADDRESS_ZERO
     };

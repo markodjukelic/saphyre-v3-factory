@@ -2,9 +2,7 @@
 import { ONE_BI, ZERO_BD, ZERO_BI } from '../src/handlers/utils/constants';
 import {
   Bundle,
-  Factory,
   handlerContext,
-  Pool,
   PoolDayData,
   PoolHourData,
   Token,
@@ -12,6 +10,7 @@ import {
   TokenHourData,
   UniswapDayData,
 } from 'generated';
+import type { Entities_Factory_t as Factory, Entities_Pool_t as Pool } from 'generated';
 
 export function updateUniswapDayData(
   timestamp: number,

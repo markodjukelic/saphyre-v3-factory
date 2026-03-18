@@ -1,5 +1,5 @@
 import { Factory, Bundle, Token } from "generated";
-import type { Pool } from "generated";
+import type { Entities_Pool_t as Pool } from "generated";
 import { ZERO_BD, ZERO_BI, ONE_BI, ADDRESS_ZERO } from "./utils/constants";
 import { CHAIN_CONFIGS } from "./utils/chains";
 import { isAddressInList, truncateTotalSupplyToSubgraphCompat } from "./utils/index";

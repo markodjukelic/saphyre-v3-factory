@@ -1,5 +1,6 @@
 import assert from "assert";
-import { TestHelpers, Bundle, Burn, Pool, BigDecimal, Factory, Tick, Token } from 'generated';
+import { TestHelpers, Bundle, Burn, BigDecimal, Tick, Token } from 'generated';
+import type { Entities_Pool_t as Pool, Entities_Factory_t as Factory } from 'generated';
 import { convertTokenToDecimal, fastExponentiation, safeDiv } from '../src/handlers/utils';
 import { ZERO_BD, ONE_BD, ZERO_BI, ONE_BI } from '../src/handlers/utils/constants';
 import {
@@ -22,7 +23,7 @@ const txFrom = '0xa79d3B28A109F0E3E4919c9715748dB6D88f313f';
 const txHash = "0x26b168e005a168b28d518675435c9f51816697c086deef7377e0018e4eb65dc9";
 
 interface BurnFixture {
-    owner: string
+    owner: `0x${string}`
     tickLower: bigint
     tickUpper: bigint
     amount: bigint
@@ -97,6 +98,17 @@ describe('handleBurn', async () => {
         liquidityNet: ZERO_BI,
         price0: tlPrice0,
         price1: safeDiv(ONE_BD, tlPrice0),
+        volumeToken0: ZERO_BD,
+        volumeToken1: ZERO_BD,
+        volumeUSD: ZERO_BD,
+        untrackedVolumeUSD: ZERO_BD,
+        feesUSD: ZERO_BD,
+        collectedFeesToken0: ZERO_BD,
+        collectedFeesToken1: ZERO_BD,
+        collectedFeesUSD: ZERO_BD,
+        liquidityProviderCount: ZERO_BI,
+        feeGrowthOutside0X128: ZERO_BI,
+        feeGrowthOutside1X128: ZERO_BI,
     };
 
     mockDb = mockDb.entities.Tick.set(tickLower);
@@ -111,7 +123,18 @@ describe('handleBurn', async () => {
         liquidityGross: ZERO_BI,
         liquidityNet: ZERO_BI,
         price0: tuPrice0,
-        price1: safeDiv(ONE_BD, tuPrice0)
+        price1: safeDiv(ONE_BD, tuPrice0),
+        volumeToken0: ZERO_BD,
+        volumeToken1: ZERO_BD,
+        volumeUSD: ZERO_BD,
+        untrackedVolumeUSD: ZERO_BD,
+        feesUSD: ZERO_BD,
+        collectedFeesToken0: ZERO_BD,
+        collectedFeesToken1: ZERO_BD,
+        collectedFeesUSD: ZERO_BD,
+        liquidityProviderCount: ZERO_BI,
+        feeGrowthOutside0X128: ZERO_BI,
+        feeGrowthOutside1X128: ZERO_BI,
     };
 
     mockDb = mockDb.entities.Tick.set(tickUpper);

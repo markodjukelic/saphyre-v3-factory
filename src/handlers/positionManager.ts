@@ -90,7 +90,7 @@ async function getOrCreatePosition(
 }
 
 async function savePositionSnapshot(
-  position: position,
+  position: Position,
   event: { chainId: number; block: { number: number; timestamp: number }; transaction?: { hash: string; gasPrice?: bigint } },
   context: any
 ): Promise<void> {

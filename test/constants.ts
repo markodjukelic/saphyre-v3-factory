@@ -1,5 +1,5 @@
 import { TestHelpers, BigDecimal, Token } from 'generated';
-import type { pool as PoolEntity } from 'generated';
+import type { Entities_Pool_t as PoolEntity } from 'generated';
 import { ChainConfig } from '../src/handlers/utils/chains';
 import { ZERO_BD, ZERO_BI } from '../src/handlers/utils/constants';
 import { isAddressInList } from '../src/handlers/utils/index';
@@ -183,11 +183,11 @@ export async function invokePoolCreatedWithMockedEthCalls(
     const token1 = getTokenFixture(pool.token1.address);
 
     const poolCreatedEvent = Factory.PoolCreated.createMockEvent({
-        token0: token0.address,
-        token1: token1.address,
+        token0: token0.address as `0x${string}`,
+        token1: token1.address as `0x${string}`,
         fee: BigInt(feeTier),
         tickSpacing: BigInt(tickSpacing),
-        pool: chainConfig.stablecoinWrappedNativePoolId,
+        pool: chainConfig.stablecoinWrappedNativePoolId as `0x${string}`,
         mockEventData: {
             chainId,
             block: { timestamp, number: blockNumber }

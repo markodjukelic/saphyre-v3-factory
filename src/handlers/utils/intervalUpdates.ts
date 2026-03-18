@@ -10,7 +10,7 @@ import {
     TokenHourData,
     UniswapDayData,
 } from 'generated';
-import type { Factory, Pool, Tick } from 'generated';
+import type { Entities_Factory_t as Factory, Entities_Pool_t as Pool, Entities_Tick_t as Tick } from 'generated';
 import { makeId } from './idFormat';
 
 export async function updateUniswapDayData(
