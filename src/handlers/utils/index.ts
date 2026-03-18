@@ -38,7 +38,7 @@ export function _fastExponentiation(
     power: bigint
 ): BigDecimal {
     if (power < ZERO_BI) {
-        const result = _fastExponentiation(value, -power);
+        const result = fastExponentiation(value, -power);
         return safeDiv(ONE_BD, result);
     }
 
@@ -51,7 +51,7 @@ export function _fastExponentiation(
     }
 
     const halfPower = power / 2n;
-    const halfResult = _fastExponentiation(value, halfPower);
+    const halfResult = fastExponentiation(value, halfPower);
 
     // Use the fact that x ^ (2n) = (x ^ n) * (x ^ n) and we can compute (x ^ n) only once.
     let result = halfResult.times(halfResult);
