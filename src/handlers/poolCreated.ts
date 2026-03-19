@@ -30,11 +30,13 @@ Factory.PoolCreated.handler(async ({ event, context }) => {
       context.effect(getTokenMetadataEffect, { address: token0Address, chainId: event.chainId })
         .catch((err: unknown) => {
           context.log.error(`Failed to fetch metadata for token0 ${token0Address} on chain ${event.chainId}`, err as Error);
+          context.log.warn(`[Token decimals] token0=${token0Address} using FALLBACK decimals=18 - may cause 10^x volumeUSD errors if token is 6 decimals`);
           return METADATA_FALLBACK;
         }),
       context.effect(getTokenMetadataEffect, { address: token1Address, chainId: event.chainId })
         .catch((err: unknown) => {
           context.log.error(`Failed to fetch metadata for token1 ${token1Address} on chain ${event.chainId}`, err as Error);
+          context.log.warn(`[Token decimals] token1=${token1Address} using FALLBACK decimals=18 - may cause 10^x volumeUSD errors if token is 6 decimals`);
           return METADATA_FALLBACK;
         }),
     ]);
@@ -87,7 +89,7 @@ Factory.PoolCreated.handler(async ({ event, context }) => {
     tokens[0] = { ...token0RO };
     if (context.log && shouldLogToken(makeId(event.chainId, token0Address.toLowerCase()))) {
       const exp = SUBGRAPH_EXPECTED.Token[token0Address.toLowerCase()];
-      context.log.info(`[Token totalSupply] token0=${token0Address} existing totalSupply=${token0RO.totalSupply} subgraph_expected=${exp?.totalSupply ?? "?"}`);
+      context.log.info(`[Token] token0=${token0Address} decimals=${token0RO.decimals} totalSupply=${token0RO.totalSupply} subgraph_decimals=${exp?.decimals ?? "?"} subgraph_totalSupply=${exp?.totalSupply ?? "?"}`);
     }
   } else {
     const rawTotalSupply0 = BigInt(token0Metadata.totalSupply ?? "0");
@@ -95,7 +97,7 @@ Factory.PoolCreated.handler(async ({ event, context }) => {
     const token0Id = makeId(event.chainId, token0Address.toLowerCase());
     if (context.log && shouldLogToken(token0Id)) {
       const exp = SUBGRAPH_EXPECTED.Token[token0Address.toLowerCase()];
-      context.log.info(`[Token totalSupply] token0=${token0Address} raw=${rawTotalSupply0} truncated_i32=${totalSupply0} storing=${totalSupply0} subgraph_expected=${exp?.totalSupply ?? "?"} match=${exp ? String(totalSupply0) === exp.totalSupply : "?"}`);
+      context.log.info(`[Token] token0=${token0Address} decimals=${token0Metadata.decimals} totalSupply=${totalSupply0} subgraph_decimals=${exp?.decimals ?? "?"} subgraph_totalSupply=${exp?.totalSupply ?? "?"}`);
     }
     tokens[0] = {
       id: token0Id,
@@ -122,7 +124,7 @@ Factory.PoolCreated.handler(async ({ event, context }) => {
     tokens[1] = { ...token1RO };
     if (context.log && shouldLogToken(makeId(event.chainId, token1Address.toLowerCase()))) {
       const exp = SUBGRAPH_EXPECTED.Token[token1Address.toLowerCase()];
-      context.log.info(`[Token totalSupply] token1=${token1Address} existing totalSupply=${token1RO.totalSupply} subgraph_expected=${exp?.totalSupply ?? "?"}`);
+      context.log.info(`[Token] token1=${token1Address} decimals=${token1RO.decimals} totalSupply=${token1RO.totalSupply} subgraph_decimals=${exp?.decimals ?? "?"} subgraph_totalSupply=${exp?.totalSupply ?? "?"}`);
     }
   } else {
     const rawTotalSupply1 = BigInt(token1Metadata.totalSupply ?? "0");
@@ -130,7 +132,7 @@ Factory.PoolCreated.handler(async ({ event, context }) => {
     const token1Id = makeId(event.chainId, token1Address.toLowerCase());
     if (context.log && shouldLogToken(token1Id)) {
       const exp = SUBGRAPH_EXPECTED.Token[token1Address.toLowerCase()];
-      context.log.info(`[Token totalSupply] token1=${token1Address} raw=${rawTotalSupply1} truncated_i32=${totalSupply1} storing=${totalSupply1} subgraph_expected=${exp?.totalSupply ?? "?"} match=${exp ? String(totalSupply1) === exp.totalSupply : "?"}`);
+      context.log.info(`[Token] token1=${token1Address} decimals=${token1Metadata.decimals} totalSupply=${totalSupply1} subgraph_decimals=${exp?.decimals ?? "?"} subgraph_totalSupply=${exp?.totalSupply ?? "?"}`);
     }
     tokens[1] = {
       id: token1Id,

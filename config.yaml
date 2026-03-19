@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
 name: dragonswap_v3
 rollback_on_reorg: true
+# raw_events: true  # Uncomment to store raw event data for debugging (event.log, etc.). Increases DB size and processing time.
 contracts:
   - name: Factory
     events:
@@ -16,6 +17,7 @@ contracts:
             - gas
             - gasUsed
             - from
+            - transactionIndex
       - event: Mint(address sender, address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)
         field_selection:
           transaction_fields:
@@ -24,6 +26,7 @@ contracts:
             - gas
             - gasUsed
             - from
+            - transactionIndex
       - event: Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)
         field_selection:
           transaction_fields:
@@ -32,6 +35,7 @@ contracts:
             - gas
             - gasUsed
             - from
+            - transactionIndex
       - event: Flash(address indexed sender, address indexed recipient, uint256 amount0, uint256 amount1, uint256 paid0, uint256 paid1)
   - name: NonfungiblePositionManager
     events:

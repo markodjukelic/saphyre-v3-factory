@@ -3,7 +3,7 @@
  * Used in logs to compare our computed values vs subgraph.
  */
 export const SUBGRAPH_EXPECTED: {
-  Token: Record<string, { totalSupply?: string; totalValueLocked?: string; totalValueLockedUSD?: string; derivedETH?: string }>;
+  Token: Record<string, { decimals?: string; totalSupply?: string; totalValueLocked?: string; totalValueLockedUSD?: string; derivedETH?: string }>;
   Pool: Record<string, { feeGrowthGlobal0X128?: string; feeGrowthGlobal1X128?: string }>;
   Burn: Record<string, { amount?: string; amount0?: string; amount1?: string }>;
   Swap: Record<string, { amount0?: string; amount1?: string; amount0In?: string; amount1In?: string; amount0Out?: string; amount1Out?: string }>;
@@ -12,6 +12,7 @@ export const SUBGRAPH_EXPECTED: {
 } = {
   Token: {
     "0x059a6b0ba116c63191182a0956cf697d0d2213ec": {
+      decimals: "18",
       totalSupply: "16456",
       totalValueLocked: "94797.808085384631059892",
       totalValueLockedUSD: "69301.76483006641340704555576491121",

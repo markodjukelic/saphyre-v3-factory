@@ -118,8 +118,9 @@ Pool.Mint.handler(async ({ event, context }) => {
     );
 
     // Subgraph: mint.id = transaction.id + '#' + pool.txCount (after pool.txCount incremented)
+    const mintId = `${transaction.id}#${pool.txCount}`;
     const mint = {
-        id: `${transaction.id}#${pool.txCount}`,
+        id: mintId,
         transaction_id: transaction.id,
         timestamp: transaction.timestamp,
         pool_id: pool.id,

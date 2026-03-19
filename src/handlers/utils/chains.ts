@@ -90,7 +90,7 @@ export const CHAIN_CONFIGS: { [chainId: number]: ChainConfig } = {
         address: "0x37a4dd9ced2b19cfe8fac251cd727b5787e45269",
         symbol: "FAST_USDT",
         name: "Fast USDT",
-        decimals: BigInt(6),
+        decimals: BigInt(18), // was 6; SeiScan + subgraph confirm 18
       },
       // --- Wrapped native: 18 decimals, symbol/name confirmed from subgraph ---
       {

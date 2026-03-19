@@ -1,6 +1,6 @@
 import { Pool, Token, Bundle } from "generated";
 import { CHAIN_CONFIGS } from "./utils/chains";
-import { findNativePerToken, getNativePriceInUSD } from "./utils/pricing";
+import { findNativePerToken, getNativePriceInUSD, sqrtPriceX96ToTokenPrices } from "./utils/pricing";
 import { updatePoolDayData, updatePoolHourData } from "./utils/intervalUpdates";
 import { makeId, bundleId } from "./utils/idFormat";
 import { shouldLogPool } from "./utils/debugLogAllowlist";
@@ -24,6 +24,7 @@ Pool.Initialize.handler(async ({event, context}) => {
         wrappedNativeAddress,
         stablecoinAddresses,
         minimumNativeLocked,
+        nativeTokenDetails,
     } = CHAIN_CONFIGS[event.chainId];
 
     // update pool sqrt price and tick
@@ -31,6 +32,19 @@ Pool.Initialize.handler(async ({event, context}) => {
         ...pool,
         sqrtPrice: event.params.sqrtPriceX96,
         tick: event.params.tick
+    };
+
+    // set token prices from sqrtPriceX96 so PoolDayData/PoolHourData have correct values
+    const [price0, price1] = sqrtPriceX96ToTokenPrices(
+        pool.sqrtPrice,
+        token0,
+        token1,
+        nativeTokenDetails
+    );
+    pool = {
+        ...pool,
+        token0Price: price0,
+        token1Price: price1,
     };
 
     if (context.log && shouldLogPool(poolId)) {

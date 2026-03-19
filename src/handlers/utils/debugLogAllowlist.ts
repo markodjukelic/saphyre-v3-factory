@@ -3,18 +3,20 @@
  * When an entity matches, we log relevant field calculations to trace discrepancies.
  * Pool ID format: lowercase address (SUBGRAPH_COMPATIBLE_IDS) or "chainId-address".
  */
+/** Tokens with high volumeUSD/feesUSD diff (10^x) - log decimals to verify vs subgraph. */
 const DEBUG_LOG_TOKEN_IDS = new Set<string>([
   "0x059a6b0ba116c63191182a0956cf697d0d2213ec",
+  "0x008c8c362cd46a9e41957cc11ee812647233dff1",
+  "0x049eaa1b2c9934aaacc12a141484eefd62867653",
+  "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
 ]);
 
 const DEBUG_LOG_POOL_IDS = new Set<string>([
   "0x01430caba3b858561bb85e8ed1e4389740f7ef17",
 ]);
 
-const DEBUG_LOG_BURN_IDS = new Set<string>([
-  "0x00000204e493afc4a52e7c3dc73277c2976b6ff0902238307d560f5898fa5779#846212",
-]);
-
+const DEBUG_LOG_MINT_IDS = new Set<string>([]);
+const DEBUG_LOG_BURN_IDS = new Set<string>([]);
 const DEBUG_LOG_SWAP_IDS = new Set<string>([
   "0x00000204e493afc4a52e7c3dc73277c2976b6ff0902238307d560f5898fa5779#846206",
 ]);
@@ -41,6 +43,10 @@ export function shouldLogToken(tokenId: string): boolean {
   if (DEBUG_LOG_TOKEN_IDS.size === 0) return false;
   const normalized = tokenId.toLowerCase();
   return DEBUG_LOG_TOKEN_IDS.has(tokenId) || DEBUG_LOG_TOKEN_IDS.has(normalized);
+}
+
+export function shouldLogMint(mintId: string): boolean {
+  return DEBUG_LOG_MINT_IDS.has(mintId) || DEBUG_LOG_MINT_IDS.has(mintId.toLowerCase());
 }
 
 export function shouldLogBurn(burnId: string): boolean {
