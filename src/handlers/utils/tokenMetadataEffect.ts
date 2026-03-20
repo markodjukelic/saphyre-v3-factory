@@ -102,7 +102,7 @@ export const getTokenMetadataEffect = createEffect(
 
 
     try {
-      // Handle native token
+      // Handle native token (no contract to call)
       if (normalizedAddress === ADDRESS_ZERO.toLowerCase()) {
         const chainConfig = getChainConfig(chainId);
         const result = {
@@ -114,23 +114,7 @@ export const getTokenMetadataEffect = createEffect(
         return result;
       }
 
-      // Check for token overrides
-      const chainConfig = getChainConfig(chainId);
-      const tokenOverride = chainConfig.tokenOverrides.find(
-        (t) => t.address.toLowerCase() === normalizedAddress
-      );
-
-      if (tokenOverride) {
-        const result = {
-          name: tokenOverride.name,
-          symbol: tokenOverride.symbol,
-          decimals: Number(tokenOverride.decimals),
-          totalSupply: "0",
-        };
-        return result;
-      }
-
-      // Get or create a client with batching enabled
+      // Fetch from contract (matches subgraph: no token overrides for SEI)
       if (!clients[chainId]) {
         clients[chainId] = createPublicClient({
           transport: http(getRpcUrl(chainId), { batch: true }),

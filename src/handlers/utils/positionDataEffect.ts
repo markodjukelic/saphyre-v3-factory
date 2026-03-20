@@ -123,7 +123,7 @@ export const getPositionDataEffect = createEffect(
     });
 
     return {
-      poolAddress: poolAddress.toLowerCase(),
+      poolAddress: (poolAddress as string).toLowerCase(),
       token0: (token0 as string).toLowerCase(),
       token1: (token1 as string).toLowerCase(),
       tickLower: Number(tickLower),
