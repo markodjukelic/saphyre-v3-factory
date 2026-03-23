@@ -93,7 +93,7 @@ export const getTokenMetadataEffect = createEffect(
       totalSupply: S.string,
     },
     rateLimit: { calls: 50, per: "second" },
-    cache: true,
+    cache: true, 
   },
   async ({ input, context }) => {
     const { address, chainId } = input;
