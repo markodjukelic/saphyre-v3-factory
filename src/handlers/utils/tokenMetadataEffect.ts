@@ -117,7 +117,11 @@ export const getTokenMetadataEffect = createEffect(
       // Fetch from contract (matches subgraph: no token overrides for SEI)
       if (!clients[chainId]) {
         clients[chainId] = createPublicClient({
-          transport: http(getRpcUrl(chainId), { batch: true }),
+          transport: http(getRpcUrl(chainId), {
+            batch: true,
+            retryCount: 3,
+            retryDelay: 2000,
+          }),
         });
         context.log.info(
           `Created client for chain ${chainId} with batching enabled`
