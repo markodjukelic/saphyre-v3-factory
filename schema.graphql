@@ -254,6 +254,19 @@ type PositionSnapshot {
   feeGrowthInside1LastX128: BigInt!
 }
 
+type PoolMintEventCache {
+  # transaction hash + '#' + pool-mint logIndex
+  id: ID!
+  # tx containing Pool.Mint and NFPM.Transfer
+  txHash: String! @index
+  # pool entity id (subgraph-compatible: raw pool address)
+  poolId: String!
+  tickLower: BigInt!
+  tickUpper: BigInt!
+  # receipt log index
+  logIndex: BigInt!
+}
+
 type Transaction {
   # txn hash
   id: ID!

@@ -196,4 +196,16 @@ Pool.Mint.handler(async ({ event, context }) => {
     context.Pool.set(pool);
     context.Factory.set(factory);
     context.Mint.set(mint);
+
+    // Cache Pool.Mint so NFPM.Transfer(from=0) can deterministically derive
+    // the minted position's pool + tick range without calling npm.positions().
+    const txHashLower = txHash.toLowerCase();
+    context.PoolMintEventCache.set({
+        id: `${txHashLower}#${BigInt(event.logIndex).toString()}`,
+        txHash: txHashLower,
+        poolId: pool.id.toLowerCase(),
+        tickLower: event.params.tickLower,
+        tickUpper: event.params.tickUpper,
+        logIndex: BigInt(event.logIndex),
+    });
 });
