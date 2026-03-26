@@ -18,7 +18,12 @@ const getRpcUrl = (chainId: number): string => {
     case 1868: return process.env.ENVIO_SONIEUM_RPC_URL || "https://sonieum.drpc.org";
     case 130: return process.env.ENVIO_UNICHAIN_RPC_URL || "https://unichain.drpc.org";
     case 57073: return process.env.ENVIO_INK_RPC_URL || "https://ink.drpc.org";
-    case 1329: return process.env.ENVIO_SEI_RPC_URL || "https://sei.drpc.org";
+    case 1329:
+      return (
+        process.env.ENVIO_CHAIN_1329_RPC_URL ||
+        process.env.ENVIO_SEI_RPC_URL ||
+        "https://sei.drpc.org"
+      );
     default: throw new Error(`No RPC URL configured for chainId ${chainId}`);
   }
 };
