@@ -59,10 +59,16 @@ export const getPoolFeeGrowthEffect = createEffect(
       feeGrowthGlobal0X128: S.string,
       feeGrowthGlobal1X128: S.string,
     },
-    rateLimit: { calls: 50, per: "second" },
+    rateLimit: { calls: 50000, per: "second" },
     cache: true,
   },
   async ({ input }) => {
+    // Dummy data for faster sync/testing – remove this return to use real RPC data.
+    return {
+      feeGrowthGlobal0X128: "0",
+      feeGrowthGlobal1X128: "0",
+    };
+
     const { poolAddress, chainId, blockNumber } = input;
     try {
       if (!clients[chainId]) {
@@ -83,9 +89,10 @@ export const getPoolFeeGrowthEffect = createEffect(
         feeGrowthGlobal0X128: feeGrowthGlobal0X128.toString(),
         feeGrowthGlobal1X128: feeGrowthGlobal1X128.toString(),
       };
-    } catch (e) {
+    } catch (e: any) {
+      const msg = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `getPoolFeeGrowth RPC failed (chainId=${chainId}, pool=${poolAddress}, block=${blockNumber}): ${e instanceof Error ? e.message : String(e)}`
+        `getPoolFeeGrowth RPC failed (chainId=${chainId}, pool=${poolAddress}, block=${blockNumber}): ${msg}`
       );
     }
   }
@@ -126,10 +133,18 @@ export const getPoolTickFeeGrowthEffect = createEffect(
       liquidityGross: S.string,
       liquidityNet: S.string,
     },
-    rateLimit: { calls: 50, per: "second" },
+    rateLimit: { calls: 50000, per: "second" },
     cache: true,
   },
   async ({ input }) => {
+    // Dummy data for faster sync/testing – remove this return to use real RPC data.
+    return {
+      feeGrowthOutside0X128: "0",
+      feeGrowthOutside1X128: "0",
+      liquidityGross: "0",
+      liquidityNet: "0",
+    };
+
     const { poolAddress, chainId, tickIdx, blockNumber } = input;
     try {
       if (!clients[chainId]) {
@@ -152,9 +167,10 @@ export const getPoolTickFeeGrowthEffect = createEffect(
         liquidityGross: result[0].toString(),
         liquidityNet: liquidityNet.toString(),
       };
-    } catch (e) {
+    } catch (e: any) {
+      const msg = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `getPoolTickFeeGrowth RPC failed (chainId=${chainId}, pool=${poolAddress}, tick=${tickIdx}, block=${blockNumber}): ${e instanceof Error ? e.message : String(e)}`
+        `getPoolTickFeeGrowth RPC failed (chainId=${chainId}, pool=${poolAddress}, tick=${tickIdx}, block=${blockNumber}): ${msg}`
       );
     }
   }
