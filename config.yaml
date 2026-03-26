@@ -75,10 +75,11 @@ contracts:
 
 chains:
   - id: 1329 # sei
-    start_block: 96611313
+    start_block: 96611314  # Match subgraph Factory startBlock
     contracts: 
       - name: Factory
         address: 0x179D9a5592Bc77050796F7be28058c51cA575df4
       - name: Pool 
       - name: NonfungiblePositionManager
         address: 0xa7FDcBe645d6b2B98639EbacbC347e2B575f6F70
+        start_block: 96863749  # Match subgraph NPM startBlock

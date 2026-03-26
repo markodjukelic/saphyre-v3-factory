@@ -163,15 +163,22 @@ Pool.Mint.handler(async ({ event, context }) => {
 
     // Subgraph: updateTickFeeVarsAndSave(lowerTick, event) and same for upperTick (read fee growth from pool, update tick, updateTickDayData)
     for (const [tick, tickIdx] of [[lowerTick, event.params.tickLower], [upperTick, event.params.tickUpper]] as const) {
-        const feeVars = await context.effect(getPoolTickFeeGrowthEffect, {
-            poolAddress: event.srcAddress,
-            chainId: event.chainId,
-            tickIdx: Number(tickIdx),
-        });
-        tick.feeGrowthOutside0X128 = BigInt(feeVars.feeGrowthOutside0X128);
-        tick.feeGrowthOutside1X128 = BigInt(feeVars.feeGrowthOutside1X128);
-        tick.liquidityGross = BigInt(feeVars.liquidityGross);
-        tick.liquidityNet = BigInt(feeVars.liquidityNet);
+        try {
+            const feeVars = await context.effect(getPoolTickFeeGrowthEffect, {
+                poolAddress: event.srcAddress,
+                chainId: event.chainId,
+                tickIdx: Number(tickIdx),
+                blockNumber: BigInt(event.block.number),
+            });
+            tick.feeGrowthOutside0X128 = BigInt(feeVars.feeGrowthOutside0X128);
+            tick.feeGrowthOutside1X128 = BigInt(feeVars.feeGrowthOutside1X128);
+            tick.liquidityGross = BigInt(feeVars.liquidityGross);
+            tick.liquidityNet = BigInt(feeVars.liquidityNet);
+        } catch (error) {
+            context.log.error(
+                `Failed getPoolTickFeeGrowthEffect in Mint (pool=${pool.id}, tick=${tick.id}, block=${event.block.number}): ${error instanceof Error ? error.message : String(error)}`
+            );
+        }
         context.Tick.set(tick);
         await intervalUpdates.updateTickDayData(timestamp, tick, context);
     }

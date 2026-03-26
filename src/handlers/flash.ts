@@ -11,15 +11,20 @@ Pool.Flash.handler(async ({ event, context }) => {
   const pool = await context.Pool.get(poolId);
   if (!pool) return;
 
-  const feeGrowth = await context.effect(getPoolFeeGrowthEffect, {
-    poolAddress: event.srcAddress,
-    chainId: event.chainId,
-  });
+  const updatedPool = { ...pool };
+  try {
+    const feeGrowth = await context.effect(getPoolFeeGrowthEffect, {
+      poolAddress: event.srcAddress,
+      chainId: event.chainId,
+      blockNumber: BigInt(event.block.number),
+    });
+    updatedPool.feeGrowthGlobal0X128 = BigInt(feeGrowth.feeGrowthGlobal0X128);
+    updatedPool.feeGrowthGlobal1X128 = BigInt(feeGrowth.feeGrowthGlobal1X128);
+  } catch (error) {
+    context.log.error(
+      `Failed getPoolFeeGrowthEffect in Flash (pool=${poolId}, block=${event.block.number}): ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 
-  const updatedPool = {
-    ...pool,
-    feeGrowthGlobal0X128: BigInt(feeGrowth.feeGrowthGlobal0X128),
-    feeGrowthGlobal1X128: BigInt(feeGrowth.feeGrowthGlobal1X128),
-  };
   context.Pool.set(updatedPool);
 });

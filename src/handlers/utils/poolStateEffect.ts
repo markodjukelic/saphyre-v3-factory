@@ -48,22 +48,17 @@ export const getPoolFeeGrowthEffect = createEffect(
     input: {
       poolAddress: S.string,
       chainId: S.number,
+      blockNumber: S.bigint,
     },
     output: {
       feeGrowthGlobal0X128: S.string,
       feeGrowthGlobal1X128: S.string,
     },
-    rateLimit: { calls: 50000, per: "second" },
-    cache: false,
+    rateLimit: { calls: 50, per: "second" },
+    cache: true,
   },
   async ({ input }) => {
-    // Dummy data for testing – remove this return to use real RPC data
-    return {
-      feeGrowthGlobal0X128: "0",
-      feeGrowthGlobal1X128: "0",
-    };
-
-    const { poolAddress, chainId } = input;
+    const { poolAddress, chainId, blockNumber } = input;
     try {
       if (!clients[chainId]) {
         clients[chainId] = createPublicClient({
@@ -76,19 +71,17 @@ export const getPoolFeeGrowthEffect = createEffect(
         client: clients[chainId],
       });
       const [feeGrowthGlobal0X128, feeGrowthGlobal1X128] = await Promise.all([
-        contract.read.feeGrowthGlobal0X128(),
-        contract.read.feeGrowthGlobal1X128(),
+        contract.read.feeGrowthGlobal0X128({ blockNumber }),
+        contract.read.feeGrowthGlobal1X128({ blockNumber }),
       ]);
       return {
         feeGrowthGlobal0X128: feeGrowthGlobal0X128.toString(),
         feeGrowthGlobal1X128: feeGrowthGlobal1X128.toString(),
       };
     } catch (e) {
-      // RPC rate limit or network error: return zeros so handler continues (indexer does not crash)
-      return {
-        feeGrowthGlobal0X128: "0",
-        feeGrowthGlobal1X128: "0",
-      };
+      throw new Error(
+        `getPoolFeeGrowth RPC failed (chainId=${chainId}, pool=${poolAddress}, block=${blockNumber}): ${e instanceof Error ? e.message : String(e)}`
+      );
     }
   }
 );
@@ -120,6 +113,7 @@ export const getPoolTickFeeGrowthEffect = createEffect(
       poolAddress: S.string,
       chainId: S.number,
       tickIdx: S.number,
+      blockNumber: S.bigint,
     },
     output: {
       feeGrowthOutside0X128: S.string,
@@ -127,19 +121,11 @@ export const getPoolTickFeeGrowthEffect = createEffect(
       liquidityGross: S.string,
       liquidityNet: S.string,
     },
-    rateLimit: { calls: 5000, per: "second" },
+    rateLimit: { calls: 50, per: "second" },
     cache: true,
   },
   async ({ input }) => {
-    // Dummy data for testing – remove this return to use real RPC data
-    return {
-      feeGrowthOutside0X128: "0",
-      feeGrowthOutside1X128: "0",
-      liquidityGross: "0",
-      liquidityNet: "0",
-    };
-
-    const { poolAddress, chainId, tickIdx } = input;
+    const { poolAddress, chainId, tickIdx, blockNumber } = input;
     try {
       if (!clients[chainId]) {
         clients[chainId] = createPublicClient({
@@ -152,7 +138,7 @@ export const getPoolTickFeeGrowthEffect = createEffect(
         client: clients[chainId],
       });
       // int24: pass as number (viem encodes signed); tickIdx can be negative
-      const result = await contract.read.ticks([tickIdx as number]);
+      const result = await contract.read.ticks([tickIdx as number], { blockNumber });
       // result: liquidityGross (uint128), liquidityNet (int128), feeGrowthOutside0, feeGrowthOutside1, ...
       const liquidityNet = result[1]; // int128, may be negative; viem returns signed bigint
       return {
@@ -162,12 +148,9 @@ export const getPoolTickFeeGrowthEffect = createEffect(
         liquidityNet: liquidityNet.toString(),
       };
     } catch (e) {
-      return {
-        feeGrowthOutside0X128: "0",
-        feeGrowthOutside1X128: "0",
-        liquidityGross: "0",
-        liquidityNet: "0",
-      };
+      throw new Error(
+        `getPoolTickFeeGrowth RPC failed (chainId=${chainId}, pool=${poolAddress}, tick=${tickIdx}, block=${blockNumber}): ${e instanceof Error ? e.message : String(e)}`
+      );
     }
   }
 );

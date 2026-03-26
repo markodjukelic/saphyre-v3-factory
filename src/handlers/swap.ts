@@ -185,12 +185,19 @@ Pool.Swap.handler(async ({ event, context }) => {
     token1.totalValueLockedUSD = token1.totalValueLocked.times(token1.derivedETH).times(bundle.ethPriceUSD);
 
     // update fee growth (subgraph: read from pool contract after swap)
-    const feeGrowth = await context.effect(getPoolFeeGrowthEffect, {
-        poolAddress: event.srcAddress,
-        chainId: event.chainId,
-    });
-    pool.feeGrowthGlobal0X128 = BigInt(feeGrowth.feeGrowthGlobal0X128);
-    pool.feeGrowthGlobal1X128 = BigInt(feeGrowth.feeGrowthGlobal1X128);
+    try {
+        const feeGrowth = await context.effect(getPoolFeeGrowthEffect, {
+            poolAddress: event.srcAddress,
+            chainId: event.chainId,
+            blockNumber: BigInt(event.block.number),
+        });
+        pool.feeGrowthGlobal0X128 = BigInt(feeGrowth.feeGrowthGlobal0X128);
+        pool.feeGrowthGlobal1X128 = BigInt(feeGrowth.feeGrowthGlobal1X128);
+    } catch (error) {
+        context.log.error(
+            `Failed getPoolFeeGrowthEffect in Swap (pool=${poolId}, block=${event.block.number}): ${error instanceof Error ? error.message : String(error)}`
+        );
+    }
 
     // Subgraph: loadTickUpdateFeeVarsAndSave - only update ticks that already exist; skip (do not create) if null.
     const oldTick = poolRO.tick ?? 0n;
@@ -200,22 +207,30 @@ Pool.Swap.handler(async ({ event, context }) => {
     const loadAndUpdateTickFeeVars = async (tickId: string): Promise<void> => {
         const tick = await context.Tick.get(tickId);
         if (!tick) return; // matches subgraph: loadTickUpdateFeeVarsAndSave skips null ticks
-        const feeVars = await context.effect(getPoolTickFeeGrowthEffect, {
-            poolAddress: event.srcAddress,
-            chainId: event.chainId,
-            tickIdx: Number(tick.tickIdx),
-        });
-        const updated: Tick = {
-            ...tick,
-            feeGrowthOutside0X128: BigInt(feeVars.feeGrowthOutside0X128),
-            feeGrowthOutside1X128: BigInt(feeVars.feeGrowthOutside1X128),
-            liquidityGross: BigInt(feeVars.liquidityGross),
-            liquidityNet: BigInt(feeVars.liquidityNet),
-        };
+        let updated: Tick = { ...tick };
+        try {
+            const feeVars = await context.effect(getPoolTickFeeGrowthEffect, {
+                poolAddress: event.srcAddress,
+                chainId: event.chainId,
+                tickIdx: Number(tick.tickIdx),
+                blockNumber: BigInt(event.block.number),
+            });
+            updated = {
+                ...tick,
+                feeGrowthOutside0X128: BigInt(feeVars.feeGrowthOutside0X128),
+                feeGrowthOutside1X128: BigInt(feeVars.feeGrowthOutside1X128),
+                liquidityGross: BigInt(feeVars.liquidityGross),
+                liquidityNet: BigInt(feeVars.liquidityNet),
+            };
+        } catch (error) {
+            context.log.error(
+                `Failed getPoolTickFeeGrowthEffect in Swap (pool=${poolId}, tick=${tick.id}, block=${event.block.number}): ${error instanceof Error ? error.message : String(error)}`
+            );
+        }
         context.Tick.set(updated);
         if (context.log && shouldLogTick(tick.id)) {
             const exp = SUBGRAPH_EXPECTED.Tick[tick.id];
-            context.log.info(`[Tick Swap] tickId=${tick.id} liquidityGross=${feeVars.liquidityGross} liquidityNet=${feeVars.liquidityNet} feeGrowthOutside0=${feeVars.feeGrowthOutside0X128} feeGrowthOutside1=${feeVars.feeGrowthOutside1X128} subgraph_feeGrowth0=${exp?.feeGrowthOutside0X128 ?? "?"} subgraph_feeGrowth1=${exp?.feeGrowthOutside1X128 ?? "?"}`);
+            context.log.info(`[Tick Swap] tickId=${tick.id} liquidityGross=${updated.liquidityGross.toString()} liquidityNet=${updated.liquidityNet.toString()} feeGrowthOutside0=${updated.feeGrowthOutside0X128.toString()} feeGrowthOutside1=${updated.feeGrowthOutside1X128.toString()} subgraph_feeGrowth0=${exp?.feeGrowthOutside0X128 ?? "?"} subgraph_feeGrowth1=${exp?.feeGrowthOutside1X128 ?? "?"}`);
         }
         await intervalUpdates.updateTickDayData(timestamp, updated, context);
     };
