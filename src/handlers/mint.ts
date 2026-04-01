@@ -6,6 +6,7 @@ import { CHAIN_CONFIGS } from "./utils/chains";
 import * as intervalUpdates from './utils/intervalUpdates';
 import { getPoolTickFeeGrowthEffect } from './utils/poolStateEffect';
 import { makeId, bundleId, SUBGRAPH_COMPATIBLE_IDS } from './utils/idFormat';
+import { FALLBACK_TICK_FEE_VARS } from "./utils/constants";
 import { shouldLogPool, shouldLogToken, shouldLogTransaction } from './utils/debugLogAllowlist';
 import { SUBGRAPH_EXPECTED } from './utils/debugLogSubgraphExpected';
 
@@ -178,6 +179,18 @@ Pool.Mint.handler(async ({ event, context }) => {
             context.log.error(
                 `Failed getPoolTickFeeGrowthEffect in Mint (pool=${pool.id}, tick=${tick.id}, block=${event.block.number}): ${error instanceof Error ? error.message : String(error)}`
             );
+            // Keep existing values; only apply fallback if fields are unset.
+            if (
+                (tick as any).feeGrowthOutside0X128 == null ||
+                (tick as any).feeGrowthOutside1X128 == null ||
+                (tick as any).liquidityGross == null ||
+                (tick as any).liquidityNet == null
+            ) {
+                tick.feeGrowthOutside0X128 = BigInt(FALLBACK_TICK_FEE_VARS.feeGrowthOutside0X128);
+                tick.feeGrowthOutside1X128 = BigInt(FALLBACK_TICK_FEE_VARS.feeGrowthOutside1X128);
+                tick.liquidityGross = BigInt(FALLBACK_TICK_FEE_VARS.liquidityGross);
+                tick.liquidityNet = BigInt(FALLBACK_TICK_FEE_VARS.liquidityNet);
+            }
         }
         context.Tick.set(tick);
         await intervalUpdates.updateTickDayData(timestamp, tick, context);

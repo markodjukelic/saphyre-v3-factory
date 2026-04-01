@@ -59,16 +59,10 @@ export const getPoolFeeGrowthEffect = createEffect(
       feeGrowthGlobal0X128: S.string,
       feeGrowthGlobal1X128: S.string,
     },
-    rateLimit: { calls: 50000, per: "second" },
+    rateLimit: { calls: 500, per: "second" },
     cache: true,
   },
   async ({ input }) => {
-    // Dummy data for faster sync/testing – remove this return to use real RPC data.
-    return {
-      feeGrowthGlobal0X128: "0",
-      feeGrowthGlobal1X128: "0",
-    };
-
     const { poolAddress, chainId, blockNumber } = input;
     try {
       if (!clients[chainId]) {
@@ -133,18 +127,10 @@ export const getPoolTickFeeGrowthEffect = createEffect(
       liquidityGross: S.string,
       liquidityNet: S.string,
     },
-    rateLimit: { calls: 50000, per: "second" },
+    rateLimit: { calls: 500, per: "second" },
     cache: true,
   },
   async ({ input }) => {
-    // Dummy data for faster sync/testing – remove this return to use real RPC data.
-    return {
-      feeGrowthOutside0X128: "0",
-      feeGrowthOutside1X128: "0",
-      liquidityGross: "0",
-      liquidityNet: "0",
-    };
-
     const { poolAddress, chainId, tickIdx, blockNumber } = input;
     try {
       if (!clients[chainId]) {

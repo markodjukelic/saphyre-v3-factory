@@ -6,6 +6,7 @@ import * as pricing from './utils/pricing';
 import * as intervalUpdates from './utils/intervalUpdates';
 import { getPoolFeeGrowthEffect, getPoolTickFeeGrowthEffect } from './utils/poolStateEffect';
 import { makeId, bundleId, SUBGRAPH_COMPATIBLE_IDS } from './utils/idFormat';
+import { FALLBACK_POOL_FEE_GROWTH, FALLBACK_TICK_FEE_VARS } from "./utils/constants";
 import { shouldLogPool, shouldLogSwap, shouldLogTransaction, shouldLogTick } from './utils/debugLogAllowlist';
 import { SUBGRAPH_EXPECTED } from './utils/debugLogSubgraphExpected';
 /** Positive modulo for bigint (subgraph tick math) */
@@ -197,6 +198,11 @@ Pool.Swap.handler(async ({ event, context }) => {
         context.log.error(
             `Failed getPoolFeeGrowthEffect in Swap (pool=${poolId}, block=${event.block.number}): ${error instanceof Error ? error.message : String(error)}`
         );
+        // Keep existing values; only apply fallback if fields are unset.
+        if ((pool as any).feeGrowthGlobal0X128 == null || (pool as any).feeGrowthGlobal1X128 == null) {
+            pool.feeGrowthGlobal0X128 = BigInt(FALLBACK_POOL_FEE_GROWTH.feeGrowthGlobal0X128);
+            pool.feeGrowthGlobal1X128 = BigInt(FALLBACK_POOL_FEE_GROWTH.feeGrowthGlobal1X128);
+        }
     }
 
     // Subgraph: loadTickUpdateFeeVarsAndSave - only update ticks that already exist; skip (do not create) if null.
@@ -226,6 +232,21 @@ Pool.Swap.handler(async ({ event, context }) => {
             context.log.error(
                 `Failed getPoolTickFeeGrowthEffect in Swap (pool=${poolId}, tick=${tick.id}, block=${event.block.number}): ${error instanceof Error ? error.message : String(error)}`
             );
+            // Keep existing values; only apply fallback if fields are unset.
+            if (
+                (updated as any).feeGrowthOutside0X128 == null ||
+                (updated as any).feeGrowthOutside1X128 == null ||
+                (updated as any).liquidityGross == null ||
+                (updated as any).liquidityNet == null
+            ) {
+                updated = {
+                    ...updated,
+                    feeGrowthOutside0X128: BigInt(FALLBACK_TICK_FEE_VARS.feeGrowthOutside0X128),
+                    feeGrowthOutside1X128: BigInt(FALLBACK_TICK_FEE_VARS.feeGrowthOutside1X128),
+                    liquidityGross: BigInt(FALLBACK_TICK_FEE_VARS.liquidityGross),
+                    liquidityNet: BigInt(FALLBACK_TICK_FEE_VARS.liquidityNet),
+                };
+            }
         }
         context.Tick.set(updated);
         if (context.log && shouldLogTick(tick.id)) {
