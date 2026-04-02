@@ -33,5 +33,5 @@
   },
   "optionalDependencies": {
     "generated": "./generated"
-  }
+  } 
 }
